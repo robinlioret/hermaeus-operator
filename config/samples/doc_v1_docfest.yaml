@@ -1,0 +1,14 @@
+apiVersion: doc.hermaeus.io/v1
+kind: Docfest
+metadata:
+  labels:
+    app.kubernetes.io/name: hermaeus-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: docfest-sample
+spec:
+  foo: bar
+  nested:
+    array:
+      - one
+      - two
+    enabled: true

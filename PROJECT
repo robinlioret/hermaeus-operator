@@ -11,4 +11,13 @@ plugins:
   helm.kubebuilder.io/v1-alpha: {}
 projectName: hermaeus-operator
 repo: github.com/hermaeus-project/hermaeus-operator
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  domain: hermaeus.io
+  group: doc
+  kind: Docfest
+  path: github.com/hermaeus-project/hermaeus-operator/api/v1
+  version: v1
 version: "3"
