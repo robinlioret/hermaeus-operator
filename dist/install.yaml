@@ -1,0 +1,494 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: hermaeus-operator
+    control-plane: controller-manager
+  name: hermaeus-operator-system
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.18.0
+  name: docfests.doc.hermaeus.io
+spec:
+  group: doc.hermaeus.io
+  names:
+    kind: Docfest
+    listKind: DocfestList
+    plural: docfests
+    singular: docfest
+  scope: Namespaced
+  versions:
+  - name: v1
+    schema:
+      openAPIV3Schema:
+        description: Docfest is the Schema for the docfests API.
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            x-kubernetes-preserve-unknown-fields: true
+          status:
+            description: DocfestStatus defines the observed state of Docfest.
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.18.0
+  name: documents.doc.hermaeus.io
+spec:
+  group: doc.hermaeus.io
+  names:
+    kind: Document
+    listKind: DocumentList
+    plural: documents
+    singular: document
+  scope: Namespaced
+  versions:
+  - name: v1
+    schema:
+      openAPIV3Schema:
+        description: Document is the Schema for the documents API.
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: DocumentSpec defines the desired state of Document.
+            properties:
+              foo:
+                description: Foo is an example field of Document. Edit document_types.go
+                  to remove/update
+                type: string
+            type: object
+          status:
+            description: DocumentStatus defines the observed state of Document.
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: hermaeus-operator
+  name: hermaeus-operator-controller-manager
+  namespace: hermaeus-operator-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: hermaeus-operator
+  name: hermaeus-operator-leader-election-role
+  namespace: hermaeus-operator-system
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: hermaeus-operator
+  name: hermaeus-operator-docfest-admin-role
+rules:
+- apiGroups:
+  - doc.hermaeus.io
+  resources:
+  - docfests
+  verbs:
+  - '*'
+- apiGroups:
+  - doc.hermaeus.io
+  resources:
+  - docfests/status
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: hermaeus-operator
+  name: hermaeus-operator-docfest-editor-role
+rules:
+- apiGroups:
+  - doc.hermaeus.io
+  resources:
+  - docfests
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - doc.hermaeus.io
+  resources:
+  - docfests/status
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: hermaeus-operator
+  name: hermaeus-operator-docfest-viewer-role
+rules:
+- apiGroups:
+  - doc.hermaeus.io
+  resources:
+  - docfests
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - doc.hermaeus.io
+  resources:
+  - docfests/status
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: hermaeus-operator
+  name: hermaeus-operator-document-admin-role
+rules:
+- apiGroups:
+  - doc.hermaeus.io
+  resources:
+  - documents
+  verbs:
+  - '*'
+- apiGroups:
+  - doc.hermaeus.io
+  resources:
+  - documents/status
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: hermaeus-operator
+  name: hermaeus-operator-document-editor-role
+rules:
+- apiGroups:
+  - doc.hermaeus.io
+  resources:
+  - documents
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - doc.hermaeus.io
+  resources:
+  - documents/status
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: hermaeus-operator
+  name: hermaeus-operator-document-viewer-role
+rules:
+- apiGroups:
+  - doc.hermaeus.io
+  resources:
+  - documents
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - doc.hermaeus.io
+  resources:
+  - documents/status
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: hermaeus-operator-manager-role
+rules:
+- apiGroups:
+  - doc.hermaeus.io
+  resources:
+  - documents
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - doc.hermaeus.io
+  resources:
+  - documents/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - doc.hermaeus.io
+  resources:
+  - documents/status
+  verbs:
+  - get
+  - patch
+  - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: hermaeus-operator-metrics-auth-role
+rules:
+- apiGroups:
+  - authentication.k8s.io
+  resources:
+  - tokenreviews
+  verbs:
+  - create
+- apiGroups:
+  - authorization.k8s.io
+  resources:
+  - subjectaccessreviews
+  verbs:
+  - create
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: hermaeus-operator-metrics-reader
+rules:
+- nonResourceURLs:
+  - /metrics
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: hermaeus-operator
+  name: hermaeus-operator-leader-election-rolebinding
+  namespace: hermaeus-operator-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: hermaeus-operator-leader-election-role
+subjects:
+- kind: ServiceAccount
+  name: hermaeus-operator-controller-manager
+  namespace: hermaeus-operator-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: hermaeus-operator
+  name: hermaeus-operator-manager-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: hermaeus-operator-manager-role
+subjects:
+- kind: ServiceAccount
+  name: hermaeus-operator-controller-manager
+  namespace: hermaeus-operator-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: hermaeus-operator-metrics-auth-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: hermaeus-operator-metrics-auth-role
+subjects:
+- kind: ServiceAccount
+  name: hermaeus-operator-controller-manager
+  namespace: hermaeus-operator-system
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: hermaeus-operator
+    control-plane: controller-manager
+  name: hermaeus-operator-controller-manager-metrics-service
+  namespace: hermaeus-operator-system
+spec:
+  ports:
+  - name: https
+    port: 8443
+    protocol: TCP
+    targetPort: 8443
+  selector:
+    app.kubernetes.io/name: hermaeus-operator
+    control-plane: controller-manager
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: hermaeus-operator
+    control-plane: controller-manager
+  name: hermaeus-operator-controller-manager
+  namespace: hermaeus-operator-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: hermaeus-operator
+      control-plane: controller-manager
+  template:
+    metadata:
+      annotations:
+        kubectl.kubernetes.io/default-container: manager
+      labels:
+        app.kubernetes.io/name: hermaeus-operator
+        control-plane: controller-manager
+    spec:
+      containers:
+      - args:
+        - --metrics-bind-address=:8443
+        - --leader-elect
+        - --health-probe-bind-address=:8081
+        command:
+        - /manager
+        image: local/hermaeus-operator:dev
+        imagePullPolicy: Never
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8081
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        name: manager
+        ports: []
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 8081
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        resources:
+          limits:
+            cpu: 500m
+            memory: 128Mi
+          requests:
+            cpu: 10m
+            memory: 64Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+        volumeMounts: []
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      serviceAccountName: hermaeus-operator-controller-manager
+      terminationGracePeriodSeconds: 10
+      volumes: []

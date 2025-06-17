@@ -38,6 +38,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
 	docv1 "github.com/hermaeus-project/hermaeus-operator/api/v1"
+	"github.com/hermaeus-project/hermaeus-operator/internal/controller"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -201,6 +202,13 @@ func main() {
 		os.Exit(1)
 	}
 
+	if err := (&controller.DocumentReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "Document")
+		os.Exit(1)
+	}
 	// +kubebuilder:scaffold:builder
 
 	if metricsCertWatcher != nil {

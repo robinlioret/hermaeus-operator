@@ -3,6 +3,7 @@
 # It should be run by config/default
 resources:
 - bases/doc.hermaeus.io_docfests.yaml
+- bases/doc.hermaeus.io_documents.yaml
 # +kubebuilder:scaffold:crdkustomizeresource
 
 patches:

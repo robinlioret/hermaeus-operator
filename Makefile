@@ -1,5 +1,5 @@
 # Image URL to use all building/pushing image targets
-IMG ?= controller:latest
+IMG ?= local/hermaeus-operator:dev
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -140,6 +140,11 @@ build-installer: manifests generate kustomize ## Generate a consolidated YAML wi
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
 	$(KUSTOMIZE) build config/default > dist/install.yaml
 
+.PHONY: build-helm-chart
+build-helm-chart: manifests generate kustomize 
+	mkdir -p dist
+	kubebuilder edit --plugins=helm/v1-alpha
+
 ##@ Deployment
 
 ifndef ignore-not-found
@@ -162,6 +167,11 @@ deploy: manifests kustomize ## Deploy controller to the K8s cluster specified in
 .PHONY: undeploy
 undeploy: kustomize ## Undeploy controller from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
 	$(KUSTOMIZE) build config/default | $(KUBECTL) delete --ignore-not-found=$(ignore-not-found) -f -
+
+##@ CI
+
+.PHONY: prepare-merge
+prepare-merge: lint test test-e2e build-installer build-helm-chart
 
 ##@ Dependencies
 

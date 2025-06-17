@@ -3,7 +3,7 @@ controllerManager:
   replicas: 1
   container:
     image:
-      repository: controller
+      repository: ghrc.io/hermaeus-project/hermaeus-operator
       tag: latest
     args:
       - "--leader-elect"

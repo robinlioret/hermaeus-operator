@@ -1,0 +1,9 @@
+apiVersion: doc.hermaeus.io/v1
+kind: Document
+metadata:
+  labels:
+    app.kubernetes.io/name: hermaeus-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: document-sample
+spec:
+  # TODO(user): Add fields here

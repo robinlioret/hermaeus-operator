@@ -1,4 +1,5 @@
 ## Append samples of your project ##
 resources:
 - doc_v1_docfest.yaml
+- doc_v1_document.yaml
 # +kubebuilder:scaffold:manifestskustomizesamples
