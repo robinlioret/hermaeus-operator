@@ -1,0 +1,11 @@
+# Use distroless as minimal base image to package the manager binary
+# Refer to https://github.com/GoogleContainerTools/distroless for more details
+FROM gcr.io/distroless/static:nonroot
+
+WORKDIR /
+
+# goreleaser runs docker build in a context that contains just the Dockerfile and the binary.
+COPY hermaeus-operator .
+
+USER 65532:65532
+ENTRYPOINT ["/hermaeus-operator"]

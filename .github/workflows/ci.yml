@@ -1,13 +1,142 @@
-name: Test Chart
+name: Tests
 
 on:
   push:
+    branches: [main]
   pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  test-e2e:
-    name: Run on Ubuntu
+  codegen:
+    name: Check Codegen
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Clone the code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: go mod tidy
+        run: |
+          go mod tidy
+          if ! diff=$(git diff --exit-code --unified=0 -- go.sum); then
+            line=$(echo "$diff" | sed -nr 's/@@ -([0-9]+),.*/\1/p' | head -n 1 | tr -d '\n')
+            echo "::error file=go.sum,line=$line::go.sum is out of date. Run 'go mod tidy' and commit the changes."
+            exit 1
+          fi
+
+      - name: make build-installer
+        run: |
+          make build-installer
+          if ! git diff --exit-code; then
+            echo "::error ::Manifests are out of date. Run 'make build-installer' and commit the changes."
+            exit 1
+          fi
+
+      - name: make build-helm-chart
+        run: |
+          make build-helm-chart
+          if ! git diff --exit-code; then
+            echo "::error ::Manifests are out of date. Run 'make build-helm-chart' and commit the changes."
+            exit 1
+          fi
+
+  test:
+    name: Tests
+    needs:
+      - codegen
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Clone the code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Run linter
+        uses: golangci/golangci-lint-action@v8
+        with:
+          version: v2.1.0
+
+      - name: Running Tests
+        run: |
+          go mod tidy
+          make test
+
+      # - name: Build
+      #   if: steps.cache-build.outputs.cache-hit != 'true'
+      #   run: make
+      # - name: Run Integration Tests
+      #   run: make test-parallel
+
+      # - name: Generate code coverage artifacts
+      #   if: ${{ !cancelled() }}
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: code-coverage
+      #     path: cover.out
+
+      # - name: Upload code coverage information to codecov.io
+      #   if: ${{ !cancelled() }}
+      #   uses: codecov/codecov-action@v5.4.3
+      #   with:
+      #     files: cover.out
+      #     fail_ci_if_error: false
+      #   env:
+      #     CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+      # - name: Upload test results to codecov.io
+      #   if: ${{ !cancelled() }}
+      #   uses: codecov/test-results-action@v1
+      #   with:
+      #     token: ${{ secrets.CODECOV_TOKEN }}
+
+  test-e2e:
+    name: End to end tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs:
+      - test
+    steps:
+      - name: Clone the code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Install the latest version of kind
+        run: |
+          curl -Lo ./kind https://kind.sigs.k8s.io/dl/latest/kind-linux-amd64
+          chmod +x ./kind
+          sudo mv ./kind /usr/local/bin/kind
+
+      - name: Verify kind installation
+        run: kind version
+
+      - name: Running Test e2e
+        run: |
+          go mod tidy
+          make test-e2e
+
+  test-chart:
+    name: Chart test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs:
+      - test-e2e
     steps:
       - name: Clone the code
         uses: actions/checkout@v4
