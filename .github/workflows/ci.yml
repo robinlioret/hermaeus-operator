@@ -51,8 +51,6 @@ jobs:
 
   test:
     name: Tests
-    needs:
-      - codegen
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -108,6 +106,7 @@ jobs:
     timeout-minutes: 30
     needs:
       - test
+      - codegen
     steps:
       - name: Clone the code
         uses: actions/checkout@v4
@@ -131,12 +130,12 @@ jobs:
           go mod tidy
           make test-e2e
 
-  test-chart:
-    name: Chart test
+  test-helm-chart:
+    name: Test helm chart
     runs-on: ubuntu-latest
-    timeout-minutes: 30
     needs:
-      - test-e2e
+      - test
+      - codegen
     steps:
       - name: Clone the code
         uses: actions/checkout@v4
@@ -161,11 +160,8 @@ jobs:
       - name: Prepare hermaeus-operator
         run: |
           go mod tidy
-
-          # Tag must be different than "latest" to change imagePullPolicy to "IfNotPresent"
-          # See `kubectl explain pod.spec.containers.imagePullPolicy`
-          make docker-build IMG=local/hermaeus-operator:dev
-          kind load docker-image local/hermaeus-operator:dev
+          make docker-build IMG=hermaeus-operator:dev
+          kind load docker-image hermaeus-operator:dev
 
       - name: Install Helm
         run: |

@@ -141,9 +141,10 @@ build-installer: manifests generate kustomize ## Generate a consolidated YAML wi
 	$(KUSTOMIZE) build config/default > dist/install.yaml
 
 .PHONY: build-helm-chart
-build-helm-chart: manifests generate kustomize 
+build-helm-chart: manifests generate kustomize kubebuilder
 	mkdir -p dist
-	kubebuilder edit --plugins=helm/v1-alpha
+	$(KUBEBUILDER) edit --plugins=helm/v1-alpha
+	rm .github/workflows/test-chart.yml
 
 ##@ Deployment
 
@@ -196,6 +197,7 @@ CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
 ENVTEST ?= $(LOCALBIN)/setup-envtest
 GOLANGCI_LINT = $(LOCALBIN)/golangci-lint
 GORELEASER ?= $(LOCALBIN)/goreleaser
+KUBEBUILDER ?= $(LOCALBIN)/kubebuilder
 
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v5.6.0
@@ -206,6 +208,7 @@ ENVTEST_VERSION ?= $(shell go list -m -f "{{ .Version }}" sigs.k8s.io/controller
 ENVTEST_K8S_VERSION ?= $(shell go list -m -f "{{ .Version }}" k8s.io/api | awk -F'[v.]' '{printf "1.%d", $$3}')
 GOLANGCI_LINT_VERSION ?= v2.1.6
 GORELEASER_VERSION ?= v2.10.2
+KUBEBUILDER_VERSION ?= v4.6.0
 
 .PHONY: kustomize
 kustomize: $(KUSTOMIZE) ## Download kustomize locally if necessary.
@@ -239,6 +242,13 @@ $(GOLANGCI_LINT): $(LOCALBIN)
 goreleaser: $(GORELEASER)
 $(GORELEASER): $(LOCALBIN)
 	$(call go-install-tool,$(GORELEASER),github.com/goreleaser/goreleaser/v2,$(GORELEASER_VERSION))
+
+.PHONY: kubebuilder
+kubebuilder: $(KUBEBUILDER)
+$(KUBEBUILDER): $(LOCALBIN)
+	curl -L -o ./kubebuilder "https://github.com/kubernetes-sigs/kubebuilder/releases/download/${KUBEBUILDER_VERSION}/kubebuilder_$(shell go env GOOS)_$(shell go env GOARCH)"
+	chmod +x ./kubebuilder
+	mv ./kubebuilder $(KUBEBUILDER)
 
 # go-install-tool will 'go install' any package with custom target and name of binary, if it doesn't exist
 # $1 - target path with name of binary
