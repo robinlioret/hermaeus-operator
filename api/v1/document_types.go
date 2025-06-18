@@ -17,19 +17,33 @@ limitations under the License.
 package v1
 
 import (
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
+// Destination specification.
+type Destination struct {
+	// Reference to the git repository.
+	GitRepositoryRef corev1.ObjectReference `json:"gitRepositoryRef"`
+
+	// Path in the git repository.
+	Path string `json:"path"`
+}
+
 // DocumentSpec defines the desired state of Document.
 type DocumentSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// Foo is an example field of Document. Edit document_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	// Where the document is supposed to be stored. Ignored if empty.
+	// +optional
+	Destination Destination `json:"destination,omitempty"`
+
+	// Textual content of the document file.
+	Content string `json:"content"`
 }
 
 // DocumentStatus defines the observed state of Document.
