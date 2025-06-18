@@ -15,8 +15,6 @@ permissions:
 
 jobs:
   goreleaser:
-    permissions:
-      packages: write
     runs-on: ubuntu-latest
     if: github.repository == 'hermaeus-project/hermaeus-operator'
     steps:
