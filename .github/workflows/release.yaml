@@ -15,7 +15,9 @@ permissions:
 
 jobs:
   goreleaser:
+    permissions: write-all
     runs-on: ubuntu-latest
+    if: github.repository == 'hermaeus-project/hermaeus-operator'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
