@@ -1,0 +1,19 @@
+apiVersion: doc.hermaeus.io/v1
+kind: Document
+metadata:
+  labels:
+    app.kubernetes.io/name: hermaeus-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: document-sample-no-destination
+spec:
+  content: |
+    # Sample document content
+
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut rutrum ligula et porta placerat. 
+    Duis neque est, luctus tempor scelerisque vel, mattis a mi. Suspendisse potenti. Cras vel nibh 
+    id mi varius finibus ut iaculis odio. Vestibulum ac lacinia massa. Sed pellentesque fermentum 
+    ullamcorper. Mauris vestibulum suscipit nunc, at vulputate leo consequat eu. Vestibulum risus 
+    odio, suscipit ut gravida sed, mollis eu tellus. Donec id metus in lorem consequat sodales a 
+    sed metus. Nulla id laoreet libero. Vivamus id commodo sapien. Nulla facilisi.
+
+    :memo: **Memo**: Donec in ornare ipsum, sed efficitur turpis.
